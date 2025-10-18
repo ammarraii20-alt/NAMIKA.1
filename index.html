@@ -1,0 +1,233 @@
+<!--
+File: index.html
+Description: Single-file responsive "Cream & Purple" mobile login page prototype
+Includes: HTML, CSS, and minimal JS (password show/hide + simple validation animation)
+
+How to use:
+1) Save this file as `index.html`.
+2) To preview locally: open the file in a browser (double-click) or run a simple local server:
+   - Python 3: `python -m http.server 8000` and open http://localhost:8000
+3) To put on GitHub Pages:
+   - Create a new GitHub repository (e.g. `cream-purple-login`).
+   - Add `index.html` to the repo (commit & push).
+   - In repo Settings -> Pages, set branch to `main` (or `gh-pages`) and folder `/ (root)`.
+   - GitHub will publish at https://<your-username>.github.io/<repo-name>/ (wait a minute)
+
+Customization notes:
+- All styles are inline in this file. Replace text, logo, or colors as needed.
+- If you want the exact assets from your original design zip (images/illustrations), upload them to the repo and update the <img> src values.
+
+-->
+
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cream & Purple — Login</title>
+  <style>
+    :root{
+      --cream: #FFF8F0;
+      --deep-purple:#5B2E8A; /* main accent */
+      --soft-purple:#8C64B6;
+      --muted:#9B8AA7;
+      --card:#ffffff;
+      --glass: rgba(255,255,255,0.6);
+      --shadow: 0 6px 18px rgba(90,70,120,0.12);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+
+    html,body{height:100%; margin:0; background: linear-gradient(180deg,var(--cream) 0%, #FFF6F2 40%); color:#332E3B}
+    .wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:28px}
+
+    /* mobile card */
+    .card{
+      width:100%; max-width:420px; background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(255,255,255,0.96)); border-radius:28px; box-shadow:var(--shadow); padding:28px; position:relative; overflow:hidden;
+      border: 1px solid rgba(90,70,120,0.06);
+    }
+
+    /* decorative blobs */
+    .blob{
+      position:absolute; border-radius:50%; filter: blur(28px); transform: translate(-20%, -20%);
+    }
+    .blob.one{ width:220px; height:220px; right:-60px; top:-80px; background: linear-gradient(135deg,var(--deep-purple), var(--soft-purple)); opacity:0.18}
+    .blob.two{ width:160px; height:160px; left:-60px; bottom:-50px; background: linear-gradient(135deg,#FFD6E3,#C8A7FF); opacity:0.12}
+
+    .brand{display:flex; gap:12px; align-items:center}
+    .logo{width:56px; height:56px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg,var(--deep-purple),var(--soft-purple)); color:white; font-weight:700; font-size:20px; box-shadow: 0 6px 18px rgba(91,46,138,0.18)}
+    .brand h1{font-size:18px; margin:0}
+    .brand p{margin:0; color:var(--muted); font-size:13px}
+
+    h2{margin-top:18px; margin-bottom:8px}
+    p.lead{margin:0 0 18px 0; color:var(--muted); font-size:14px}
+
+    form{display:flex; flex-direction:column; gap:14px}
+    label{font-size:13px; color:var(--muted)}
+    .input{
+      background: rgba(255,255,255,0.9); border:1px solid rgba(60,40,90,0.06); padding:12px 14px; border-radius:12px; font-size:15px; outline:none; box-shadow:inset 0 -1px 0 rgba(0,0,0,0.02)
+    }
+
+    .password-wrap{position:relative}
+    .toggle-eye{position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; padding:6px; cursor:pointer; border-radius:8px}
+
+    .btn{
+      appearance:none; border:none; padding:12px 14px; font-size:16px; border-radius:12px; cursor:pointer; font-weight:600; background: linear-gradient(90deg,var(--deep-purple),var(--soft-purple)); color:white; box-shadow: 0 10px 22px rgba(88,42,140,0.18);
+    }
+
+    .forgot{background:none; border:none; color:var(--deep-purple); font-weight:600; text-align:left; padding:0; cursor:pointer}
+
+    .or{display:flex; align-items:center; gap:10px; color:var(--muted); font-size:13px}
+    .or hr{flex:1; border:0; height:1px; background: rgba(0,0,0,0.06); border-radius:2px}
+
+    .socials{display:flex; gap:10px}
+    .social{flex:1; padding:10px; border-radius:12px; border:1px solid rgba(60,40,90,0.06); display:flex; gap:10px; align-items:center; justify-content:center; background:white}
+
+    .small{font-size:13px; color:var(--muted); text-align:center}
+
+    /* subtle focus */
+    .input:focus{box-shadow:0 6px 18px rgba(99,65,150,0.08); border-color: rgba(91,46,138,0.16)}
+
+    /* responsive tweaks */
+    @media(min-width:900px){
+      body{background:linear-gradient(90deg,var(--cream), #FFF6F2 40%)}
+      .wrap{padding:60px}
+    }
+
+    /* micro animation for floating card on load */
+    .card{transform:translateY(14px); opacity:0; animation: floatUp 600ms ease-out forwards}
+    @keyframes floatUp{to{transform:none; opacity:1}}
+
+    /* validation shake */
+    @keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}}
+    .shake{animation:shake 420ms ease-in-out}
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="card">
+      <div class="blob one" aria-hidden></div>
+      <div class="blob two" aria-hidden></div>
+
+      <div class="brand">
+        <div class="logo">V</div>
+        <div>
+          <h1>Vorticosa Care</h1>
+          <p>mengalirkan kepedulian • menyehatkan masyarakat</p>
+        </div>
+      </div>
+
+      <h2>Selamat Datang</h2>
+      <p class="lead">Masuk untuk melanjutkan ke dasbor Vorcare — desain mobile prototype cream & purple.</p>
+
+      <form id="loginForm" onsubmit="return handleSubmit(event)">
+        <div>
+          <label for="email">Email</label>
+          <input id="email" class="input" type="email" placeholder="nama@contoh.com" required />
+        </div>
+
+        <div>
+          <label for="password">Kata Sandi</label>
+          <div class="password-wrap">
+            <input id="password" class="input" type="password" placeholder="Masukkan kata sandi" required minlength="6" />
+            <button type="button" class="toggle-eye" aria-label="Toggle password" onclick="togglePassword()">
+              <!-- eye svg -->
+              <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5Z" stroke="#5B2E8A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="3" stroke="#5B2E8A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px">
+          <button class="btn" type="submit">Masuk</button>
+          <button class="forgot" type="button" onclick="alert('Fitur lupa sandi belum aktif')">Lupa?</button>
+        </div>
+
+        <div class="or" style="margin-top:4px">
+          <hr />
+          <div>atau</div>
+          <hr />
+        </div>
+
+        <div class="socials">
+          <button type="button" class="social" onclick="alert('Masuk dengan Google')">
+            <!-- google svg -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 12.23C21 11.52 20.95 10.83 20.83 10.17H12v3.92h5.05c-.22 1.12-.9 2.07-1.92 2.71v2.26h3.1C20.45 18.95 21 15.86 21 12.23z" fill="#4285F4"/>
+              <path d="M12 22c2.7 0 4.97-.9 6.63-2.45l-3.1-2.26c-.86.58-1.96.92-3.53.92-2.71 0-5-1.83-5.82-4.3H3.02v2.7C4.68 19.95 8.03 22 12 22z" fill="#34A853"/>
+              <path d="M6.18 13.91A6.99 6.99 0 0 1 6 12c0-.62.1-1.22.28-1.79V7.51H3.02A10 10 0 0 0 2 12c0 1.6.38 3.12 1.02 4.49l3.16-2.58z" fill="#FBBC05"/>
+              <path d="M12 6.5c1.47 0 2.8.5 3.84 1.47l2.88-2.88C16.93 3.58 14.7 2.5 12 2.5 8.03 2.5 4.68 4.55 3.02 7.29l3.16 2.7C7 8.33 9.29 6.5 12 6.5z" fill="#EA4335"/>
+            </svg>
+            <span style="margin-left:6px">Google</span>
+          </button>
+
+          <button type="button" class="social" onclick="alert('Masuk dengan Apple')">
+            <!-- apple svg -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16.365 1.43c-.86.02-1.89.58-2.5 1.33-.55.67-1.03 1.79-.82 2.84 1.03.05 2.1-.52 2.74-1.26.6-.69 1.05-1.82.58-2.91zM20.22 7.06c-.81 1.04-1.88 1.8-2.95 1.8-1.06 0-2.05-.61-2.75-.61-.73 0-1.88.61-3.09.61-1.18 0-2.4-.59-3.56-.59-2.57 0-4.82 1.49-6.15 3.8-2.63 4.45-.67 11.03 1.9 14.65 1.27 1.8 2.77 3.82 4.74 3.76 1.9-.06 2.45-1.21 4.6-1.21 2.11 0 2.6 1.21 4.71 1.21 1.99 0 3.18-1.75 4.42-3.52 1.4-1.95 1.97-3.84 1.98-3.95-.04-.01-4.55-1.75-4.6-6.93-.06-5.8 4.86-7.6 4.9-7.62-2.72-3.95-6.94-3.62-6.94-3.62z" fill="#111"/>
+            </svg>
+            <span style="margin-left:6px">Apple</span>
+          </button>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="small">Belum punya akun? <button type="button" class="forgot" onclick="alert('Daftar belum diimplementasikan')">Daftar</button></div>
+      </form>
+
+    </div>
+  </div>
+
+  <script>
+    function togglePassword(){
+      const pw = document.getElementById('password');
+      const eye = document.getElementById('eyeIcon');
+      if(pw.type === 'password'){
+        pw.type = 'text';
+        eye.innerHTML = '<path d="M3 12s4-7 9-7 9 7 9 7-4 7-9 7-9-7-9-7z" stroke="#5B2E8A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="#5B2E8A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>';
+      } else {
+        pw.type = 'password';
+        eye.innerHTML = '<path d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5Z" stroke="#5B2E8A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>'+
+                        '<circle cx="12" cy="12" r="3" stroke="#5B2E8A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>';
+      }
+    }
+
+    function handleSubmit(e){
+      e.preventDefault();
+      const email = document.getElementById('email');
+      const pw = document.getElementById('password');
+      const card = document.getElementById('card');
+      // simple validation
+      if(!email.checkValidity() || pw.value.length < 6){
+        // shake card
+        card.classList.remove('shake');
+        void card.offsetWidth;
+        card.classList.add('shake');
+        return false;
+      }
+
+      // simulate success
+      card.style.opacity = 0.92;
+      card.style.transform = 'scale(.995)';
+      // show a tiny toast-like feedback
+      const toast = document.createElement('div');
+      toast.textContent = 'Berhasil masuk — (demo)';
+      toast.style.position = 'fixed';
+      toast.style.left = '50%';
+      toast.style.bottom = '24px';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.padding = '10px 14px';
+      toast.style.borderRadius = '10px';
+      toast.style.background = 'linear-gradient(90deg,var(--deep-purple),var(--soft-purple))';
+      toast.style.color = 'white';
+      toast.style.boxShadow = '0 8px 20px rgba(90,40,140,0.18)';
+      document.body.appendChild(toast);
+      setTimeout(()=> toast.remove(), 2200);
+
+      return false;
+    }
+  </script>
+</body>
+</html>
